@@ -93,25 +93,16 @@ JSON_Object * json_make_object(){
     return obj;
 }
 
-[[maybe_unused]]
 static int json_object_find_compare_keys(void * item,void * key){
     return strcmp(((JSON_ObjectEntry*)item)->key,(const char *)key)==0;
 }
 
-[[maybe_unused]]
 static uint32_t json_object_item_hash(void * item){
     return str_hash(((JSON_ObjectEntry*)item)->key);
 }
 
-[[maybe_unused]]
 static uint32_t json_object_key_hash(void * key){
     return str_hash((const char *)key);
-}
-
-[[maybe_unused]]
-static void json_object_item_cleanup(void * item){
-    free(((JSON_ObjectEntry*)item)->key);
-    json_cleanup_element(&((JSON_ObjectEntry*)item)->elem);
 }
 
 JSON_Element * json_object_get_n(JSON_Object * obj,const char * key,size_t n){

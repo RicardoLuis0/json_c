@@ -87,7 +87,7 @@ typedef struct JSON_ObjectEntry {
 } JSON_ObjectEntry;
 
 JSON_Object * json_make_object(){
-    JSON_Object * obj=calloc(1,sizeof(JSON_Element));
+    JSON_Object * obj=&((JSON_Element*)calloc(1,sizeof(JSON_Element)))->_obj;
     obj->type=JSON_OBJECT;
     obj->tbl=alloc_table(32,sizeof(JSON_ObjectEntry));
     return obj;
@@ -160,7 +160,7 @@ void json_free_object(JSON_Object * obj){
 }
 
 JSON_Array * json_make_array(){
-    JSON_Array * arr=calloc(1,sizeof(JSON_Element));
+    JSON_Array * arr=&((JSON_Element*)calloc(1,sizeof(JSON_Element)))->_arr;
     arr->type=JSON_ARRAY;
     return arr;
 }
@@ -243,7 +243,7 @@ void json_array_remove(JSON_Array * arr,size_t index){
 }
 
 JSON_String * json_make_string_n(const char * s,size_t n){
-    JSON_String * str=calloc(1,sizeof(JSON_Element));
+    JSON_String * str=&((JSON_Element*)calloc(1,sizeof(JSON_Element)))->_str;
     str->type=JSON_STRING;
     str->str=calloc(n+1,sizeof(char));
     memcpy(str->str,s,n);
@@ -281,14 +281,14 @@ void json_free_string(JSON_String * str){
 
 
 JSON_Integer * json_make_integer(int64_t i){
-    JSON_Integer * ie=calloc(1,sizeof(JSON_Element));
+    JSON_Integer * ie=&((JSON_Element*)calloc(1,sizeof(JSON_Element)))->_int;
     ie->type=JSON_INTEGER;
     ie->i=i;
     return ie;
 }
 
 JSON_Double * json_make_double(double d){
-    JSON_Double * de=calloc(1,sizeof(JSON_Element));
+    JSON_Double * de=&((JSON_Element*)calloc(1,sizeof(JSON_Element)))->_double;
     de->type=JSON_DOUBLE;
     de->d=d;
     return de;
@@ -326,7 +326,7 @@ typedef struct parse_data {
 } parse_data;
 
 JSON_Element * parse_error(const char * fmt,...){
-    JSON_String * str=calloc(1,sizeof(JSON_Element));
+    JSON_String * str=&((JSON_Element*)calloc(1,sizeof(JSON_Element)))->_str;
     va_list arg1,arg2;
     va_start(arg1,fmt);
     va_copy(arg2,arg1);
@@ -420,7 +420,7 @@ static JSON_Element * json_parse_string(parse_data * p){
     if(i>=p->n){
         return parse_error(reading_escape?"Expected '\"', got EOF":"Expected char got EOF");
     }
-    JSON_String * str=calloc(1,sizeof(JSON_Element));
+    JSON_String * str=&((JSON_Element*)calloc(1,sizeof(JSON_Element)))->_str;
     str->type=JSON_STRING;
     str->str=calloc(n+1,sizeof(char));
     str->str[n]=0;
@@ -593,12 +593,12 @@ JSON_Element * json_parse_number(parse_data * p){
             number.d=number.i;
         }else if(is_valid){
             if(is_double){
-                JSON_Double * d=calloc(1,sizeof(JSON_Element));
+                JSON_Double * d=&((JSON_Element*)calloc(1,sizeof(JSON_Element)))->_double;
                 d->type=JSON_DOUBLE;
                 d->d=is_negative?-number.d:number.d;
                 return (JSON_Element*)d;
             }else{
-                JSON_Integer * i=calloc(1,sizeof(JSON_Element));
+                JSON_Integer * i=&((JSON_Element*)calloc(1,sizeof(JSON_Element)))->_int;
                 i->type=JSON_INTEGER;
                 i->i=is_negative?-number.i:number.i;
                 return (JSON_Element*)i;
@@ -609,12 +609,12 @@ JSON_Element * json_parse_number(parse_data * p){
     }
     if(is_valid){
         if(is_double){
-            JSON_Double * d=calloc(1,sizeof(JSON_Element));
+            JSON_Double * d=&((JSON_Element*)calloc(1,sizeof(JSON_Element)))->_double;
             d->type=JSON_DOUBLE;
             d->d=is_negative?-number.d:number.d;
             return (JSON_Element*)d;
         }else{
-            JSON_Integer * i=calloc(1,sizeof(JSON_Element));
+            JSON_Integer * i=&((JSON_Element*)calloc(1,sizeof(JSON_Element)))->_int;
             i->type=JSON_INTEGER;
             i->i=is_negative?-number.i:number.i;
             return (JSON_Element*)i;

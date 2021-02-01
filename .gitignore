@@ -1,0 +1,10 @@
+*.save
+*.depend
+*.layout
+*.bak
+*.dll
+*.obj
+*.exe
+obj/
+bin/
+test.json

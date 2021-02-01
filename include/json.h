@@ -3,7 +3,10 @@
 #include "utils.h"
 
 #ifdef __cplusplus
+#include <cstdio>
 extern "C" {
+#else
+#include <stdio.h>
 #endif // __cplusplus
 
 typedef struct JSON_Element JSON_Element;
@@ -104,6 +107,13 @@ void json_free_element(JSON_Element *);
 JSON_Element * json_parse_n(const char * s,size_t n);
 
 JSON_Element * json_parse(const char * s);
+
+void json_write_element(FILE *f,JSON_Element *,size_t indentation);
+void json_write_object(FILE *f,JSON_Object *,size_t indentation);
+void json_write_array(FILE *f,JSON_Array *,size_t indentation);
+void json_write_string(FILE *f,JSON_String *,size_t indentation);
+
+//same as json_write_*(stdout,...)
 
 void json_print_element(JSON_Element *,size_t indentation);
 void json_print_object(JSON_Object *,size_t indentation);

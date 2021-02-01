@@ -665,46 +665,46 @@ JSON_Element * json_parse_n(const char * data,size_t len){
     return json_parse_element(&p);
 }
 
-void print_indent(size_t indentation){
+void write_indent(FILE * f,size_t indentation){
     for(size_t i=0;i<indentation;i++){
-        fputs("  ",stdout);
+        fputs("  ",f);
     }
 }
 
-void json_print_element(JSON_Element * elem,size_t indentation){
+void json_write_element(FILE * f,JSON_Element * elem,size_t indentation){
     switch(elem->type){
     case JSON_ARRAY:
-        json_print_array(&elem->_arr,indentation);
+        json_write_array(f,&elem->_arr,indentation);
         break;
     case JSON_OBJECT:
-        json_print_object(&elem->_obj,indentation);
+        json_write_object(f,&elem->_obj,indentation);
         break;
     case JSON_STRING:
-        json_print_string(&elem->_str,indentation);
+        json_write_string(f,&elem->_str,indentation);
         break;
     case JSON_INTEGER:
         #if ULONG_MAX == 0xFFFFFFFFFFFFFFFFUL
-        printf("%ld",elem->_int.i);
+        fprintf(f,"%ld",elem->_int.i);
         #elif ULONG_LONG_MAX == 0xFFFFFFFFFFFFFFFFUL
-        printf("%lld",elem->_int.i);
+        fprintf(f,"%lld",elem->_int.i);
         #else
             #error "Can't print 64-bit integer"
         #endif
         break;
     case JSON_DOUBLE:
-        printf("%f",elem->_double.d);
+        fprintf(f,"%f",elem->_double.d);
         break;
     case JSON_TRUE:
-        printf("true");
+        fprintf(f,"true");
         break;
     case JSON_FALSE:
-        printf("false");
+        fprintf(f,"false");
         break;
     case JSON_NULL:
-        printf("null");
+        fprintf(f,"null");
         break;
     case JSON_PARSE_ERROR:
-        printf("PARSE ERROR: %s",elem->_str.str);
+        fprintf(f,"PARSE ERROR: %s",elem->_str.str);
         break;
     }
 }
@@ -748,22 +748,22 @@ static char escape(char c){
     }
 }
 
-static void print_quoted(const char * str){
-    fputc('"',stdout);
+static void write_quoted(FILE * f,const char * str){
+    fputc('"',f);
     char c;
     while((c=*(str++))){
         if(needs_escape(c)){
-            fputc('\\',stdout);
-            fputc(escape(c),stdout);
+            fputc('\\',f);
+            fputc(escape(c),f);
         }else{
-            fputc(c,stdout);
+            fputc(c,f);
         }
     }
-    fputc('"',stdout);
+    fputc('"',f);
 }
 
-void json_print_object(JSON_Object * obj,size_t indentation){
-    printf("{");
+void json_write_object(FILE * f,JSON_Object * obj,size_t indentation){
+    fputc('{',f);
     bool first=true;
     for(uint32_t i=0;i<obj->tbl->num_buckets;i++){
         if(obj->tbl->buckets[i].size&&obj->tbl->buckets[i].arr){
@@ -771,54 +771,70 @@ void json_print_object(JSON_Object * obj,size_t indentation){
             for(uint32_t j=0;j<obj->tbl->buckets[i].size;j++){
                 if(first){
                     first=false;
-                    fputc('\n',stdout);
+                    fputc('\n',f);
                 }else{
-                    fputc(',',stdout);
-                    fputc('\n',stdout);
+                    fputc(',',f);
+                    fputc('\n',f);
                 }
-                print_indent(indentation+1);
-                print_quoted(arr[j].key);
-                fputc(':',stdout);
-                json_print_element(&arr[j].elem,indentation+1);
+                write_indent(f,indentation+1);
+                write_quoted(f,arr[j].key);
+                fputc(':',f);
+                json_write_element(f,&arr[j].elem,indentation+1);
             }
         }
     }
     if(!first){
-        fputc('\n',stdout);
-        print_indent(indentation);
-        fputc('}',stdout);
+        fputc('\n',f);
+        write_indent(f,indentation);
+        fputc('}',f);
     }else{
-        fputc('}',stdout);
+        fputc('}',f);
     }
 
 }
 
-void json_print_array(JSON_Array * arr,size_t indentation){
-    printf("[");
+void json_write_array(FILE * f,JSON_Array * arr,size_t indentation){
+    fputc('[',f);
     bool first=true;
     if(arr->size&&arr->arr){
         JSON_Element * a=arr->arr;
         for(uint32_t i=0;i<arr->size;i++){
             if(first){
                 first=false;
-                fputc('\n',stdout);
+                fputc('\n',f);
             }else{
-                fputc(',',stdout);
-                fputc('\n',stdout);
+                fputc(',',f);
+                fputc('\n',f);
             }
-            print_indent(indentation+1);
-            json_print_element(&a[i],indentation+1);
+            write_indent(f,indentation+1);
+            json_write_element(f,&a[i],indentation+1);
         }
     }
     if(!first){
-        fputc('\n',stdout);
-        print_indent(indentation);
-        fputc(']',stdout);
+        fputc('\n',f);
+        write_indent(f,indentation);
+        fputc(']',f);
     }else{
-        fputc(']',stdout);
+        fputc(']',f);
     }
 }
 
+void json_write_string(FILE * f,JSON_String * str,size_t indentation){
+    write_quoted(f,str->str);
+}
+
+void json_print_element(JSON_Element * elem,size_t indentation){
+    json_write_element(stdout,elem,indentation);
+}
+
+void json_print_object(JSON_Object * obj,size_t indentation){
+    json_write_object(stdout,obj,indentation);
+}
+
+void json_print_array(JSON_Array * arr,size_t indentation){
+    json_write_array(stdout,arr,indentation);
+}
+
 void json_print_string(JSON_String * str,size_t indentation){
-    print_quoted(str->str);
+    json_write_string(stdout,str,indentation);
 }
